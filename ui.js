@@ -150,7 +150,10 @@ export const UI = {
 
   toggleModal: (id, show = null) => {
     const modal = document.getElementById(id);
-    if (!modal) return;
+    if (!modal) {
+      console.warn(`Modal element with id "${id}" not found.`);
+      return;
+    }
     if (show === null) {
       modal.classList.toggle("hidden");
     } else if (show) {
@@ -276,8 +279,10 @@ export const UI = {
 
     // Global Close Buttons
     document.querySelectorAll(".close-btn").forEach((btn) => {
-      btn.onclick = (e) =>
-        e.currentTarget.closest(".modal").classList.add("hidden");
+      btn.onclick = (e) => {
+        const modal = e.currentTarget.closest(".modal");
+        if (modal) modal.classList.add("hidden");
+      };
     });
   },
 };

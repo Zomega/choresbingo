@@ -13,7 +13,7 @@ export class Game {
     this.getTilesState = options.getTilesState || (() => []);
   }
 
-  addPlayer(id, name, icon, score = 0) {
+  addPlayer(id, name, icon, score = 0, lastSeen = Date.now()) {
     const isMe = id === this.playerId;
     const currentScore = isMe ? calculateScore(this.getTilesState()) : score;
 
@@ -22,12 +22,13 @@ export class Game {
         name,
         icon,
         score: currentScore,
-        lastSeen: Date.now(),
+        lastSeen,
       };
     } else {
       this.players[id].name = name;
       this.players[id].icon = icon;
       this.players[id].score = currentScore;
+      this.players[id].lastSeen = lastSeen;
     }
 
     this.onPlayerUpdate(id, this.players[id], isMe);
@@ -69,7 +70,13 @@ export class Game {
       case "SYNC":
         Object.entries(data.playerData).forEach(([id, pData]) => {
           if (id !== this.playerId) {
-            this.addPlayer(id, pData.name, pData.icon, pData.score);
+            this.addPlayer(
+              id,
+              pData.name,
+              pData.icon,
+              pData.score,
+              pData.lastSeen,
+            );
           }
         });
         break;
@@ -80,7 +87,13 @@ export class Game {
         break;
 
       case "PROFILE_UPDATE":
-        this.addPlayer(data.id, data.name, data.icon, data.score || 0);
+        this.addPlayer(
+          data.id,
+          data.name,
+          data.icon,
+          data.score || 0,
+          data.lastSeen,
+        );
         if (isHost) broadcast(data);
         break;
 

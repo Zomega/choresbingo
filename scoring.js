@@ -29,6 +29,7 @@ export function calculateScore(tiles, gridSize = 5) {
   let freeChains = getAllChains(tiles, gridSize, true);
 
   const getRawScore = (chains) => {
+    if (chains[0] === 0) return 0;
     let base = chains[0] * 20;
     let tieBreaker = 0;
     for (let i = 1; i < chains.length; i++) {
