@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "Cleaning Bingo!",
+    "invite_message": "Join my cleaning crew! Room: {{roomId}}"
+  },
+  "status": {
+    "hosting": "Hosting",
+    "connected": "Connected",
+    "offline": "Offline",
+    "connecting": "Connecting...",
+    "lost": "Connection Lost",
+    "error": "Connection Error",
+    "disconnected": "Server Disconnected"
+  },
+  "modals": {
+    "settings": {
+      "title": "Game Rules",
+      "restricted": "Only the Host can modify game rules.",
+      "lockout_mode": "Lockout Mode",
+      "track_style": "Track Style",
+      "difficulty": "Difficulty",
+      "save": "Save & Update"
+    },
+    "profile": {
+      "title": "Profile",
+      "name_placeholder": "Enter your name...",
+      "save": "Save & Update"
+    },
+    "connection": {
+      "title": "Invite Others",
+      "share_tooltip": "Share Link",
+      "copy_tooltip": "Copy Link",
+      "join_link": "Join Link",
+      "players_label": "Cleaning Crew:"
+    }
+  },
+  "chores": {
+    "empty_trash": "Empty Trash",
+    "clean_spices": "Clean Spices",
+    "vacuum_rug": "Vacuum Rug",
+    "dust_tv": "Dust TV",
+    "wipe_remote": "Wipe Remote",
+    "shred_mail": "Shred Mail",
+    "donate_coat": "Donate Coat",
+    "clean_sink": "Clean Sink",
+    "toss_cans": "Toss Cans",
+    "water_plants": "Water Plants",
+    "organize_shoes": "Organize Shoes",
+    "clear_desk": "Clear Desk",
+    "free_space": "FREE SPACE",
+    "scrub_tub": "Scrub Tub",
+    "mop_kitchen": "Mop Kitchen",
+    "wipe_mirrors": "Wipe Mirrors",
+    "laundry": "Laundry",
+    "fold_blankets": "Fold Blankets",
+    "clean_oven": "Clean Oven",
+    "sweep_porch": "Sweep Porch",
+    "empty_dishwasher": "Empty Dishwasher",
+    "scrub_toilets": "Scrub Toilets",
+    "fix_lightbulbs": "Fix Lightbulbs",
+    "sanitize_handles": "Sanitize Handles",
+    "take_out_recycling": "Take Out Recycling"
+  }
+}

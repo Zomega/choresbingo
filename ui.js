@@ -1,3 +1,5 @@
+import { t } from "./i18n.js";
+
 export function getThemeColor(varName) {
   return getComputedStyle(document.documentElement)
     .getPropertyValue(varName)
@@ -42,10 +44,10 @@ export const UI = {
 
     if (isOnline) {
       dot.classList.add("online");
-      text.innerText = message || (isHost ? "Hosting" : "Connected");
+      text.innerText = message || (isHost ? t("status.hosting") : t("status.connected"));
     } else {
       dot.classList.remove("online");
-      text.innerText = message || "Offline";
+      text.innerText = message || t("status.offline");
     }
   },
 
@@ -144,7 +146,7 @@ export const UI = {
       });
     } catch (e) {
       console.error("QR Generation failed:", e);
-      qrContainer.innerHTML = `<a href="${url}" target="_blank">Click here for Join Link</a>`;
+      qrContainer.innerHTML = `<a href="${url}" target="_blank">${t("connection.join_link")}</a>`;
     }
   },
 
@@ -177,11 +179,11 @@ export const UI = {
     // Settings Modal
     if (!isHost) {
       document.getElementById("settings-lil-gui").innerHTML =
-        "<p>Only the Host can modify game rules.</p>";
+        `<p>${t("modals.settings.restricted")}</p>`;
     } else {
       const gui = new lilGui({
         container: document.getElementById("settings-lil-gui"),
-        title: "Game Rules",
+        title: t("modals.settings.title"),
       });
       window.gameSettings = {
         lockoutMode: false,
@@ -199,7 +201,7 @@ export const UI = {
         },
       };
 
-      gui.add(window.gameSettings, "lockoutMode").name("Lockout Mode");
+      gui.add(window.gameSettings, "lockoutMode").name(t("modals.settings.lockout_mode"));
       gui
         .add(window.gameSettings, "trackTheme", [
           "standard",
@@ -207,13 +209,13 @@ export const UI = {
           "retro",
           "dark",
         ])
-        .name("Track Style")
+        .name(t("modals.settings.track_style"))
         .onChange((val) => {
           document.body.setAttribute("data-theme", val);
         });
       gui
         .add(window.gameSettings, "difficulty", ["easy", "normal", "hard"])
-        .name("Difficulty");
+        .name(t("modals.settings.difficulty"));
 
       document.getElementById("settings-save-button").onclick = () => {
         window.gameSettings.broadcastRules();
@@ -227,15 +229,15 @@ export const UI = {
     const canShare = !!navigator.share;
     if (!canShare) {
       shareIcon.innerText = "content_copy";
-      shareBtn.setAttribute("data-tooltip", "Copy Link");
+      shareBtn.setAttribute("data-tooltip", t("modals.connection.copy_tooltip"));
     }
     shareBtn.onclick = async () => {
       const url = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
       if (canShare) {
         try {
           await navigator.share({
-            title: "Cleaning Bingo!",
-            text: `Join my cleaning crew! Room: ${roomId}`,
+            title: t("app.title"),
+            text: t("app.invite_message", { roomId }),
             url,
           });
         } catch (err) {

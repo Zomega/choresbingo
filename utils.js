@@ -4,37 +4,38 @@ import {
   colors,
   animals,
 } from "https://esm.sh/unique-names-generator";
+import { t } from "./i18n.js";
 
-export const defaultChores = [
-  { label: "Empty Trash", color: "green" },
-  { label: "Clean Spices" },
-  { label: "Vacuum Rug", color: "blue" },
-  { label: "Dust TV" },
-  { label: "Wipe Remote", color: "red" },
+export const getDefaultChores = () => [
+  { label: t("chores.empty_trash"), color: "green" },
+  { label: t("chores.clean_spices") },
+  { label: t("chores.vacuum_rug"), color: "blue" },
+  { label: t("chores.dust_tv") },
+  { label: t("chores.wipe_remote"), color: "red" },
 
-  { label: "Shred Mail" },
-  { label: "Donate Coat", color: "green" },
-  { label: "Clean Sink" },
-  { label: "Toss Cans" },
-  { label: "Water Plants" },
+  { label: t("chores.shred_mail") },
+  { label: t("chores.donate_coat"), color: "green" },
+  { label: t("chores.clean_sink") },
+  { label: t("chores.toss_cans") },
+  { label: t("chores.water_plants") },
 
-  { label: "Organize Shoes" },
-  { label: "Clear Desk" },
-  { label: "FREE SPACE", isFree: true },
-  { label: "Scrub Tub" },
-  { label: "Mop Kitchen" },
+  { label: t("chores.organize_shoes") },
+  { label: t("chores.clear_desk") },
+  { label: t("chores.free_space"), isFree: true },
+  { label: t("chores.scrub_tub") },
+  { label: t("chores.mop_kitchen") },
 
-  { label: "Wipe Mirrors" },
-  { label: "Laundry" },
-  { label: "Fold Blankets" },
-  { label: "Clean Oven" },
-  { label: "Sweep Porch" },
+  { label: t("chores.wipe_mirrors") },
+  { label: t("chores.laundry") },
+  { label: t("chores.fold_blankets") },
+  { label: t("chores.clean_oven") },
+  { label: t("chores.sweep_porch") },
 
-  { label: "Empty Dishwasher" },
-  { label: "Scrub Toilets" },
-  { label: "Fix Lightbulbs" },
-  { label: "Sanitize Handles" },
-  { label: "Take Out Recycling" },
+  { label: t("chores.empty_dishwasher") },
+  { label: t("chores.scrub_toilets") },
+  { label: t("chores.fix_lightbulbs") },
+  { label: t("chores.sanitize_handles") },
+  { label: t("chores.take_out_recycling") },
 ];
 
 export const iconList = [

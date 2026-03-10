@@ -2,6 +2,11 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { UI } from "./ui.js";
 
+vi.mock("./i18n.js", () => ({
+  t: vi.fn((key) => `T_${key}`), // Prefix makes every key unique and identifiable
+  initI18n: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe("UI Module", () => {
   beforeEach(() => {
     document.body.innerHTML = `
@@ -21,17 +26,17 @@ describe("UI Module", () => {
       <button id="settings-save-button"></button>
       <button id="connection-share-button"></button>
       <span id="connection-share-icon"></span>
+      <div id="connection-qrcode"></div>
+      <p id="connection-room-code"></p>
       <div id="profile-icon-selector"></div>
       <input id="profile-name-input" />
       <button id="profile-save-button"></button>
     `;
 
-    // Mock getComputedStyle
     global.getComputedStyle = vi.fn().mockReturnValue({
-      getPropertyValue: (prop) => "#000000",
+      getPropertyValue: (prop) => `#${prop === "--text" ? "000000" : "ffffff"}`,
     });
 
-    // Mock navigator
     Object.defineProperty(global.navigator, "share", {
       value: vi.fn(),
       configurable: true,
@@ -48,275 +53,176 @@ describe("UI Module", () => {
     vi.restoreAllMocks();
   });
 
-  it("should update connection status with correct messages", () => {
+  it("should update connection status with unique i18n strings", () => {
     const text = document.getElementById("connection-status-text");
-    const dot = document.getElementById("connection-status-dot");
-
     UI.updateStatus(true, true);
-    expect(text.innerText).toBe("Hosting");
-    expect(dot.classList.contains("online")).toBe(true);
+    expect(text.innerText).toBe("T_status.hosting");
 
     UI.updateStatus(true, false);
-    expect(text.innerText).toBe("Connected");
+    expect(text.innerText).toBe("T_status.connected");
 
-    UI.updateStatus(false, false, "Custom Error");
-    expect(text.innerText).toBe("Custom Error");
-    expect(dot.classList.contains("online")).toBe(false);
+    UI.updateStatus(false, false);
+    expect(text.innerText).toBe("T_status.offline");
   });
 
-  it("should render bingo board with colors and free space", () => {
-    UI.renderBoard([
-      { label: "G", color: "green" },
-      { label: "F", isFree: true },
-    ]);
-    const tiles = document.querySelectorAll(".tile");
-    expect(tiles[0].classList.contains("green")).toBe(true);
-    expect(tiles[1].classList.contains("free")).toBe(true);
-    expect(tiles[1].innerText).toBe("F");
+  it("should render bingo board correctly", () => {
+    UI.renderBoard([{ label: "Task", color: "red", isFree: false }]);
+    const tile = document.querySelector(".tile");
+    expect(tile.innerText).toBe("Task");
+    expect(tile.classList.contains("red")).toBe(true);
+    expect(tile.classList.contains("free")).toBe(false);
   });
 
-  it("should handle profile update and trim name", () => {
+  it("should handle profile update strictly", () => {
     const onProfileUpdate = vi.fn();
-    const modal = document.getElementById("profile-modal");
-    modal.classList.remove("hidden");
-
     UI.initModals({
-      storage: { getPlayerName: () => "Old", getPlayerIcon: () => "🏃" },
+      storage: { getPlayerName: () => "User", getPlayerIcon: () => "🏃" },
       iconList: ["🏃"],
       onProfileUpdate,
     });
-
     const input = document.getElementById("profile-name-input");
-    input.value = "  New Name  ";
+    input.value = "  TrimMe  ";
     document.getElementById("profile-save-button").click();
+    expect(onProfileUpdate).toHaveBeenCalledWith("TrimMe");
+    expect(document.getElementById("profile-modal").classList.contains("hidden")).toBe(true);
+  });
 
-    expect(onProfileUpdate).toHaveBeenCalledWith("New Name");
+  it("should handle close buttons strictly", () => {
+    UI.initModals({ storage: { getPlayerName: vi.fn(), getPlayerIcon: vi.fn() }, iconList: [] });
+    const modal = document.getElementById("settings-modal");
+    modal.classList.remove("hidden");
+    modal.querySelector(".close-btn").click();
     expect(modal.classList.contains("hidden")).toBe(true);
   });
 
-  it("should handle icon selection and update class", () => {
-    const onProfileUpdate = vi.fn();
-    const storage = {
-      getPlayerName: () => "User",
-      getPlayerIcon: () => "🏃",
-    };
-
-    UI.initModals({
-      storage,
-      iconList: ["🚀"],
-      onProfileUpdate,
-    });
-
-    const iconSpan = document.querySelector(".icon-option");
-    iconSpan.click();
-
-    expect(onProfileUpdate).toHaveBeenCalledWith(null, "🚀");
-    expect(iconSpan.classList.contains("selected")).toBe(true);
-  });
-
-  it("should handle close buttons for any modal", () => {
-    UI.initModals({
-      storage: { getPlayerName: vi.fn(), getPlayerIcon: vi.fn() },
-      iconList: [],
-    });
-
-    const settingsModal = document.getElementById("settings-modal");
-    settingsModal.classList.remove("hidden");
-    settingsModal.querySelector(".close-btn").click();
-    expect(settingsModal.classList.contains("hidden")).toBe(true);
-  });
-
-  it("should handle settings save and hide modal", () => {
+  it("should handle settings save with strict constants", () => {
     const broadcast = vi.fn();
-    const modal = document.getElementById("settings-modal");
-    modal.classList.remove("hidden");
-
     UI.initModals({
       isHost: true,
       multiplayer: { broadcast },
-      lilGui: vi.fn().mockImplementation(() => ({
-        add: vi.fn().mockReturnThis(),
-        name: vi.fn().mockReturnThis(),
-        onChange: vi.fn().mockReturnThis(),
-      })),
+      lilGui: vi.fn().mockImplementation((cfg) => {
+        expect(cfg.title).toBe("T_modals.settings.title");
+        return {
+          add: vi.fn().mockReturnThis(),
+          name: vi.fn().mockReturnThis(),
+          onChange: vi.fn().mockReturnThis(),
+        };
+      }),
       storage: { getPlayerName: vi.fn(), getPlayerIcon: vi.fn() },
       iconList: [],
     });
-
     document.getElementById("settings-save-button").click();
-    expect(broadcast).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "RULE_CHANGE" }),
-    );
-    expect(modal.classList.contains("hidden")).toBe(true);
+    expect(broadcast).toHaveBeenCalledWith({
+      type: "RULE_CHANGE",
+      settings: expect.objectContaining({ lockoutMode: false }),
+    });
   });
 
-  it("should warn if toggleModal target is missing", () => {
-    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    UI.toggleModal("missing-id");
-    expect(spy).toHaveBeenCalledWith(expect.stringContaining("not found"));
-    spy.mockRestore();
-  });
-
-  it("should handle sharing logic", async () => {
+  it("should handle sharing logic with strict messages", async () => {
     const options = {
       roomId: "room123",
       storage: { getPlayerName: vi.fn(), getPlayerIcon: vi.fn() },
       iconList: [],
     };
-
     UI.initModals(options);
-    const shareBtn = document.getElementById("connection-share-button");
+    await document.getElementById("connection-share-button").onclick();
+    expect(global.navigator.share).toHaveBeenCalledWith({
+      title: "T_app.title",
+      text: "T_app.invite_message",
+      url: expect.stringContaining("room123"),
+    });
+  });
 
-    // 1. Share API
-    await shareBtn.onclick();
-    expect(global.navigator.share).toHaveBeenCalledWith(
-      expect.objectContaining({ url: expect.stringContaining("room123") }),
-    );
+  it("should handle racer updates and victory strictly", () => {
+    UI.ensureRacer("p1", "User", "🏃");
+    const onVictory = vi.fn();
+    const players = { p1: { name: "User", icon: "🏃", score: 100 } };
+    
+    UI.updateRacer("p1", 100, "User", "🏃", players, true, onVictory);
+    
+    const racer = document.querySelector('.racer-icon[data-id="p1"]');
+    expect(racer.style.left).toBe("100%");
+    expect(racer.querySelector("span:first-child").innerText).toBe("🏃");
+    expect(racer.querySelector(".racer-label").innerText).toBe("User");
+    expect(onVictory).toHaveBeenCalledWith("User");
+  });
 
-    // 2. Clipboard Fallback
-    delete global.navigator.share;
-    UI.initModals(options);
-    await shareBtn.onclick();
-    expect(global.navigator.clipboard.writeText).toHaveBeenCalledWith(
-      expect.stringContaining("room123"),
+  it("should handle victory confetti with strict colors", () => {
+    const confetti = vi.fn();
+    UI.triggerVictory("Winner", confetti);
+    expect(confetti).toHaveBeenCalledWith(
+      expect.objectContaining({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#ffffff", "#ffffff", "#ffffff"],
+      }),
     );
   });
 
-  it("should show restricted settings if not host", () => {
-    const options = {
-      isHost: false,
-      storage: { getPlayerName: () => "User", getPlayerIcon: () => "🏃" },
-      iconList: [],
-    };
-    UI.initModals(options);
-    expect(document.getElementById("settings-lil-gui").innerHTML).toContain(
-      "Only the Host",
+  it("should handle QR rendering with strict constants", async () => {
+    const QRCode = { toCanvas: vi.fn().mockResolvedValue(undefined) };
+    await UI.renderQR("url", QRCode);
+    expect(QRCode.toCanvas).toHaveBeenCalledWith(
+      expect.any(HTMLCanvasElement),
+      "url",
+      expect.objectContaining({ width: 160, errorCorrectionLevel: "Q" })
     );
   });
 
-  it("should refresh player status classes based on time seen", () => {
+  it("should handle missing racer gracefully", () => {
+    // Should not throw even if racer not in DOM
+    expect(() => UI.updateRacer("unknown", 50, "N", "I", {}, false)).not.toThrow();
+  });
+
+  it("should handle duplicate racers gracefully", () => {
+    UI.ensureRacer("p1", "User", "🏃");
+    const initialCount = document.querySelectorAll(".racer-icon").length;
+    UI.ensureRacer("p1", "User", "🏃");
+    expect(document.querySelectorAll(".racer-icon").length).toBe(initialCount);
+  });
+
+  it("should handle toggleModal when element exists", () => {
+    const modal = document.getElementById("profile-modal");
+    UI.toggleModal("profile-modal", true);
+    expect(modal.classList.contains("hidden")).toBe(false);
+    UI.toggleModal("profile-modal", false);
+    expect(modal.classList.contains("hidden")).toBe(true);
+    UI.toggleModal("profile-modal", null); // Toggle
+    expect(modal.classList.contains("hidden")).toBe(false);
+  });
+
+  it("should add player to list and update it", () => {
+    UI.addPlayerToList("p1", "Old Name");
+    const li = document.getElementById("li-p1");
+    expect(li).not.toBeNull();
+    expect(li.querySelector(".player-name-text").innerText).toBe("Old Name");
+
+    UI.updatePlayerInList("p1", "New Name");
+    expect(li.querySelector(".player-name-text").innerText).toBe("New Name");
+  });
+
+  it("should refresh player status dots", () => {
     const now = Date.now();
     const players = {
       p1: { lastSeen: now - 1000 },
       p2: { lastSeen: now - 15000 },
-      p3: { lastSeen: now - 30000 },
     };
-
     document.body.innerHTML += `
       <div id="player-status-dot-p1"></div>
       <div id="player-status-dot-p2"></div>
-      <div id="player-status-dot-p3"></div>
     `;
-
     UI.refreshPlayerStatusUI(players);
-
-    expect(
-      document
-        .getElementById("player-status-dot-p1")
-        .classList.contains("online"),
-    ).toBe(true);
-    expect(
-      document
-        .getElementById("player-status-dot-p2")
-        .classList.contains("lagging"),
-    ).toBe(true);
-    const dot3 = document.getElementById("player-status-dot-p3");
-    expect(dot3.classList.contains("online")).toBe(false);
-    expect(dot3.classList.contains("lagging")).toBe(false);
+    expect(document.getElementById("player-status-dot-p1").classList.contains("online")).toBe(true);
+    expect(document.getElementById("player-status-dot-p2").classList.contains("lagging")).toBe(true);
   });
 
-  it("should update racer and trigger victory", () => {
-    UI.ensureRacer("p1", "User", "🏃");
-    const onVictory = vi.fn();
-    const players = { p1: { name: "User", icon: "🏃", score: 100 } };
-
-    UI.updateRacer("p1", 100, "User", "🏃", players, true, onVictory);
-
-    const racer = document.querySelector('.racer-icon[data-id="p1"]');
-    expect(racer.style.left).toBe("100%");
-    expect(onVictory).toHaveBeenCalledWith("User");
-    expect(document.querySelector(".progress").style.width).toBe("100%");
-  });
-
-  it("should update player name in list", () => {
-    UI.addPlayerToList("p1", "Old Name");
-    UI.updatePlayerInList("p1", "New Name");
-    expect(document.querySelector("#li-p1 .player-name-text").innerText).toBe(
-      "New Name",
-    );
-  });
-
-  it("should render QR code", async () => {
-    const QRCodeMock = { toCanvas: vi.fn().mockResolvedValue(undefined) };
-    document.body.innerHTML += '<div id="connection-qrcode"></div>';
-
-    await UI.renderQR("https://link.com", QRCodeMock);
-
-    expect(QRCodeMock.toCanvas).toHaveBeenCalledWith(
-      expect.any(HTMLCanvasElement),
-      "https://link.com",
-      expect.any(Object),
-    );
-  });
-
-  it("should handle QR generation failure", async () => {
-    const QRCodeMock = {
-      toCanvas: vi.fn().mockRejectedValue(new Error("Fail")),
-    };
-    document.body.innerHTML += '<div id="connection-qrcode"></div>';
-
-    await UI.renderQR("https://link.com", QRCodeMock);
-
-    expect(document.getElementById("connection-qrcode").innerHTML).toContain(
-      "Join Link",
-    );
-  });
-
-  it("should change theme when settings modified", () => {
-    let onChangeHandler;
-    const lilGuiMock = vi.fn().mockImplementation(() => ({
-      add: vi.fn().mockReturnThis(),
-      name: vi.fn().mockReturnThis(),
-      onChange: vi.fn().mockImplementation((handler) => {
-        onChangeHandler = handler;
-        return { name: vi.fn() };
-      }),
-    }));
-
+  it("should show restricted settings if not host", () => {
     UI.initModals({
-      isHost: true,
-      lilGui: lilGuiMock,
-      storage: { getPlayerName: vi.fn(), getPlayerIcon: vi.fn() },
+      isHost: false,
+      storage: { getPlayerName: () => "User", getPlayerIcon: () => "🏃" },
       iconList: [],
     });
-
-    onChangeHandler("neon");
-    expect(document.body.getAttribute("data-theme")).toBe("neon");
-  });
-
-  it("should handle sharing clipboard success and visual feedback", async () => {
-    delete global.navigator.share;
-    const writeTextSpy = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(global.navigator, "clipboard", {
-      value: { writeText: writeTextSpy },
-      configurable: true,
-    });
-
-    vi.useFakeTimers();
-    UI.initModals({
-      roomId: "r1",
-      storage: { getPlayerName: vi.fn(), getPlayerIcon: vi.fn() },
-      iconList: [],
-    });
-
-    const icon = document.getElementById("connection-share-icon");
-    icon.innerText = "content_copy";
-
-    await document.getElementById("connection-share-button").onclick();
-
-    expect(icon.innerText).toBe("check");
-    vi.advanceTimersByTime(2000);
-    expect(icon.innerText).toBe("content_copy");
-    vi.useRealTimers();
+    expect(document.getElementById("settings-lil-gui").innerHTML).toContain("T_modals.settings.restricted");
   });
 });

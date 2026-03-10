@@ -8,8 +8,10 @@ import { Game } from "./game.js";
 import {
   iconList,
   generateHumanReadableUniqueId,
-  defaultChores,
+  getDefaultChores,
 } from "./utils.js";
+
+import { initI18n } from "./i18n.js";
 
 // --- CONFIG & STATE ---
 const urlParams = new URLSearchParams(window.location.search);
@@ -113,8 +115,9 @@ function initMultiplayer() {
 
 // --- INIT ---
 
-document.addEventListener("DOMContentLoaded", () => {
-  UI.renderBoard(defaultChores);
+document.addEventListener("DOMContentLoaded", async () => {
+  await initI18n();
+  UI.renderBoard(getDefaultChores());
   initMultiplayer();
 
   UI.initModals({

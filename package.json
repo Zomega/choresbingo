@@ -19,5 +19,9 @@
     "http-server": "^14.1.1",
     "prettier": "^3.0.0",
     "vitest": "^2.1.9"
+  },
+  "dependencies": {
+    "i18next": "^25.8.17",
+    "i18next-http-backend": "^3.0.2"
   }
 }
