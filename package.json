@@ -1,0 +1,14 @@
+{
+  "name": "chores-bingo",
+  "version": "1.0.0",
+  "description": "A multiplayer cleaning bingo game.",
+  "main": "index.html",
+  "scripts": {
+    "format": "prettier --write .",
+    "serve": "http-server -p 8005"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "prettier": "^3.0.0"
+  }
+}

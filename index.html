@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cleaning Bingo!</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <h1>Cleaning Bingo!</h1>
+
+      <button id="connection-fab" class="fab" title="Invite Others">
+        <span class="material-symbols-rounded">qr_code_2</span>
+      </button>
+
+      <button id="profile-fab" class="fab" title="Change Profile">
+        <span class="material-symbols-rounded">person</span>
+      </button>
+
+      <button id="settings-fab" class="fab" title="Settings">
+        <span class="material-symbols-rounded">settings</span>
+      </button>
+
+      <div id="connection-modal" class="hidden modal">
+        <div class="popup">
+          <button class="close-btn" data-tooltip="Close">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+          <div id="connection-status" class="connection-status-badge">
+            <span class="status-dot" id="connection-status-dot"></span>
+            <span id="connection-status-text">Connecting...</span>
+          </div>
+          <p id="connection-room-code"></p>
+          <button
+            id="connection-share-button"
+            class="icon-btn"
+            data-tooltip="Share Link"
+          >
+            <span id="connection-share-icon" class="material-symbols-rounded"
+              >share</span
+            >
+          </button>
+          <div id="connection-qrcode"></div>
+          <!-- TODO: Stylize, max height. -->
+          <div id="connection-players">
+            Cleaning Crew:
+            <ul id="player-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div id="profile-modal" class="hidden modal">
+        <div class="popup">
+          <button class="close-btn">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+          <h3 id="profile-modal-title">Profile</h3>
+
+          <input
+            type="text"
+            id="profile-name-input"
+            placeholder="Enter your name..."
+            maxlength="12"
+          />
+
+          <div class="icon-grid" id="profile-icon-selector"></div>
+
+          <button
+            id="profile-save-button"
+            class="icon-btn"
+            data-tooltip="Save & Update"
+          >
+            <span class="material-symbols-rounded">save</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="settings-modal" class="hidden modal">
+        <div class="popup">
+          <button class="close-btn">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+          <h3 id="settings-modal-title">Settings</h3>
+
+          <div id="settings-lil-gui"></div>
+
+          <button
+            id="settings-save-button"
+            class="icon-btn"
+            data-tooltip="Save & Update"
+          >
+            <span class="material-symbols-rounded">save</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bingo-grid">
+        <div class="green tile">Empty Trash</div>
+        <div class="tile">Clean Spices</div>
+        <div class="blue tile">Vacuum Rug</div>
+        <div class="tile">Dust TV</div>
+        <div class="red tile">Wipe Remote</div>
+
+        <div class="tile">Shred Mail</div>
+        <div class="green tile">Donate Coat</div>
+        <div class="tile">Clean Sink</div>
+        <div class="tile">Toss Cans</div>
+        <div class="tile">Water Plants</div>
+
+        <div class="tile">Organize Shoes</div>
+        <div class="tile">Clear Desk</div>
+        <div class="tile free">FREE SPACE</div>
+        <div class="tile">Scrub Tub</div>
+        <div class="tile">Mop Kitchen</div>
+
+        <div class="tile">Wipe Mirrors</div>
+        <div class="tile">Laundry</div>
+        <div class="tile">Fold Blankets</div>
+        <div class="tile">Clean Oven</div>
+        <div class="tile">Sweep Porch</div>
+
+        <div class="tile">Empty Dishwasher</div>
+        <div class="tile">Scrub Toilets</div>
+        <div class="tile">Fix Lightbulbs</div>
+        <div class="tile">Sanitize Handles</div>
+        <div class="tile">Take Out Recycling</div>
+      </div>
+      <div class="racetrack-container">
+        <div class="track">
+          <div class="progress" style="width: 0%"></div>
+          <span class="start-line">🌪️</span>
+          <span class="finish-line">🏁</span>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
