@@ -104,14 +104,6 @@ const HEARTBEAT_MS = 5000;
 // --- MULTIPLAYER CORE ---
 
 function getCleanUrl() {
-  // Linking to /full/ makes it look like a real app on mobile!
-  const officialFullUrl = "https://codepen.io/Zomega/full/RNRROEM";
-
-  if (window.location.href.includes("cdpn.io")) {
-    return officialFullUrl;
-  }
-
-  // Local fallback
   return window.location.origin + window.location.pathname;
 }
 
