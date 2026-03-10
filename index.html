@@ -22,6 +22,24 @@
     <div class="app-container">
       <h1>Cleaning Bingo!</h1>
 
+      <template id="tile-template">
+        <div class="tile"></div>
+      </template>
+
+      <template id="player-list-item-template">
+        <li>
+          <div class="status-dot online"></div>
+          <span class="player-name-text"></span>
+        </li>
+      </template>
+
+      <template id="racer-template">
+        <div class="racer-icon">
+          <span class="racer-emoji"></span>
+          <span class="racer-label"></span>
+        </div>
+      </template>
+
       <button id="connection-fab" class="fab" title="Invite Others">
         <span class="material-symbols-rounded">qr_code_2</span>
       </button>

@@ -71,7 +71,9 @@ vi.mock("./i18n.js", () => ({
 
 vi.mock("./utils.js", () => ({
   iconList: ["🏃‍♀️"],
-  getDefaultChores: vi.fn().mockReturnValue([{ label: "Test Chore", color: "blue" }]),
+  getDefaultChores: vi
+    .fn()
+    .mockReturnValue([{ label: "Test Chore", color: "blue" }]),
   generateHumanReadableUniqueId: vi.fn().mockReturnValue("test-room"),
 }));
 
@@ -101,11 +103,11 @@ describe("Main Orchestrator (script.js)", () => {
   it("should initialize the application on DOMContentLoaded", async () => {
     // Import script.js triggers the listener attachment
     await import("./script.js");
-    
+
     document.dispatchEvent(new Event("DOMContentLoaded"));
-    
+
     // Wait for async initI18n and renderBoard
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     const { Multiplayer } = await import("./multiplayer.js");
     const { Game } = await import("./game.js");
@@ -123,7 +125,7 @@ describe("Main Orchestrator (script.js)", () => {
   it("should handle tile clicks", async () => {
     await import("./script.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     const grid = document.querySelector(".bingo-grid");
     const tile = document.createElement("div");

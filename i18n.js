@@ -15,7 +15,9 @@ export async function initI18n(lang = "en") {
       loadPath: "./locales/{{lng}}.json",
     },
   });
-  translations = i18next.getResourceBundle(lang, "translation") || { loaded: true };
+  translations = i18next.getResourceBundle(lang, "translation") || {
+    loaded: true,
+  };
 }
 
 /**
