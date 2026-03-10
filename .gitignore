@@ -14,3 +14,9 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Reports & Coverage
+coverage/
+reports/
+.stryker-tmp/
+

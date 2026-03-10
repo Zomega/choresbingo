@@ -5,10 +5,19 @@
   "main": "index.html",
   "scripts": {
     "format": "prettier --write .",
-    "serve": "http-server -p 8005"
+    "serve": "http-server -p 8005",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:mutation": "stryker run"
   },
   "devDependencies": {
+    "@stryker-mutator/core": "^9.6.0",
+    "@stryker-mutator/vitest-runner": "^9.6.0",
+    "@vitest/coverage-v8": "^2.1.9",
+    "fast-check": "^3.15.0",
+    "happy-dom": "^14.12.3",
     "http-server": "^14.1.1",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "vitest": "^2.1.9"
   }
 }
