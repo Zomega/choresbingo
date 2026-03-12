@@ -183,6 +183,35 @@ export const UI = {
     }
   },
 
+  initOnboarding: (storage) => {
+    if (storage.getOnboardingSeen()) return;
+
+    let currentSlide = 1;
+    const modal = document.getElementById("onboarding-modal");
+    const headline = document.getElementById("onboarding-headline");
+    const copy = document.getElementById("onboarding-copy");
+    const action = document.getElementById("onboarding-action");
+
+    const renderSlide = (num) => {
+      headline.innerText = t(`onboarding.slide${num}.headline`);
+      copy.innerText = t(`onboarding.slide${num}.copy`);
+      action.innerText = t(`onboarding.slide${num}.action`);
+    };
+
+    action.onclick = () => {
+      currentSlide++;
+      if (currentSlide > 3) {
+        storage.setOnboardingSeen(true);
+        UI.toggleModal("onboarding-modal", false);
+      } else {
+        renderSlide(currentSlide);
+      }
+    };
+
+    renderSlide(currentSlide);
+    UI.toggleModal("onboarding-modal", true);
+  },
+
   initModals: (options) => {
     const {
       isHost,

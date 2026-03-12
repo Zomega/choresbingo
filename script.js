@@ -16,12 +16,20 @@ import { initI18n } from "./i18n.js";
 // --- CONFIG & STATE ---
 const urlParams = new URLSearchParams(window.location.search);
 const JOIN_ID = urlParams.get("room");
-const isHost = !JOIN_ID;
+const SAVED_HOST_ID = Storage.getHostedRoomId();
+
+// Decision Logic:
+// If we have a SAVED_HOST_ID, and it matches the URL (or URL is empty), we are the Host.
+// This prevents the Host from becoming a Guest just because the URL has ?room=...
+const isHost = !JOIN_ID || JOIN_ID === SAVED_HOST_ID;
 
 let ROOM_ID = JOIN_ID;
 if (isHost) {
-  ROOM_ID = Storage.getHostedRoomId() || generateHumanReadableUniqueId();
+  ROOM_ID = SAVED_HOST_ID || generateHumanReadableUniqueId();
+  console.log(`[App] Decided to be HOST. Room: ${ROOM_ID}`);
   Storage.setHostedRoomId(ROOM_ID);
+} else {
+  console.log(`[App] Decided to be GUEST. Joining Room: ${ROOM_ID}`);
 }
 
 const PLAYER_ID = Storage.getPlayerId() || generateHumanReadableUniqueId();
@@ -118,6 +126,7 @@ function initMultiplayer() {
 document.addEventListener("DOMContentLoaded", async () => {
   await initI18n();
   UI.renderBoard(getDefaultChores());
+  UI.initOnboarding(Storage);
   initMultiplayer();
 
   UI.initModals({
@@ -157,6 +166,47 @@ document.addEventListener("DOMContentLoaded", async () => {
     UI.toggleModal("profile-modal");
   document.getElementById("settings-fab").onclick = () =>
     UI.toggleModal("settings-modal");
+
+  // Nuke Button
+  const nukeBtn = document.getElementById("nuke-button");
+  if (nukeBtn) {
+    nukeBtn.onclick = () => {
+      if (
+        confirm("Permanently delete ALL local data? This cannot be undone.")
+      ) {
+        window.fullReset();
+      }
+    };
+  }
+
+  // Privacy Policy Modal Logic
+  const privacyLink = document.getElementById("privacy-link");
+  if (privacyLink) {
+    privacyLink.onclick = async () => {
+      const target = document.getElementById("privacy-content-target");
+      UI.toggleModal("privacy-modal", true);
+
+      try {
+        if (target.innerHTML.includes("Loading")) {
+          const response = await fetch("privacy.html");
+          const html = await response.text();
+          // Extract content between <body> tags or specific container
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, "text/html");
+          const content = doc.querySelector(".privacy-container") || doc.body;
+
+          // Remove the "Back to Bingo" link if it exists in the fetched content
+          const backLink = content.querySelector(".back-link");
+          if (backLink) backLink.remove();
+
+          target.innerHTML = content.innerHTML;
+        }
+      } catch (e) {
+        target.innerHTML =
+          "<p>Error loading privacy policy. Please try again later.</p>";
+      }
+    };
+  }
 
   // Load Board State
   const saved = Storage.getBoard();

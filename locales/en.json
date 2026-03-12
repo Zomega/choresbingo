@@ -34,6 +34,23 @@
       "players_label": "Cleaning Crew:"
     }
   },
+  "onboarding": {
+    "slide1": {
+      "headline": "Stop Nagging. Start Playing.",
+      "copy": "The struggle is real, but turning the to-do list into a competitive game can help get things done.",
+      "action": "Next"
+    },
+    "slide2": {
+      "headline": "Your Mess is Your Business.",
+      "copy": "Most apps sell your data. We don't even have a server to keep it on. You’re in Control: Delete everything with one tap. Check out our privacy policy for details.",
+      "action": "Sounds Good"
+    },
+    "slide3": {
+      "headline": "Ready for a Bingo?",
+      "copy": "1. Create a Board: Pick your chores.\n2. Share the Link: Send it to your family.\n3. Claim & Lock: Be the first to finish a row!",
+      "action": "Let's Play!"
+    }
+  },
   "chores": {
     "empty_trash": "Empty Trash",
     "clean_spices": "Clean Spices",

@@ -1,9 +1,18 @@
 # Chores Bingo Roadmap
 
+## Privacy & Data
+
+- [x] Create `privacy.html` and link from app (Philosophy: Decentralized & Privacy-First).
+- [x] Add "Nuke" button in Settings labeled "Delete All Local Data" (clears all storage/cache).
+- [ ] Research/Implement Encryption at Rest for sensitive local data.
+- [ ] Review TURN server providers for metadata/IP privacy.
+- [x] Onboarding: "How your data works" (Privacy Promise slide).
+- [x] Ensure full functionality in Offline Mode (consent is optional).
+
 ## Multiplayer & P2P
 
 - [x] Extract multiplayer logic into a separate module (`multiplayer.js`).
-- [ ] Implement robust reconnection logic (Move signaling server reconnection to an interval).
+- [x] Harden reconnection logic (ID re-acquisition and Guest Peer recycling).
 - [ ] Add player latency/heartbeat visualization.
 - [ ] Mock `Multiplayer` class for automated testing.
 
@@ -26,6 +35,6 @@
 ## UI/UX
 
 - [ ] Stylize connection players list (add max height and scroll).
-- [ ] Improve modal styling and accessibility.
+- [x] Improve modal styling and accessibility.
 - [ ] Responsive design for all screen sizes.
-- [ ] Add tooltips for action buttons.
+- [x] Add tooltips for action buttons.

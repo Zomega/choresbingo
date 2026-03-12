@@ -114,13 +114,88 @@
 
           <div id="settings-lil-gui"></div>
 
-          <button
-            id="settings-save-button"
-            class="icon-btn"
-            data-tooltip="Save & Update"
+          <div
+            class="settings-actions"
+            style="
+              margin-top: 20px;
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+            "
           >
-            <span class="material-symbols-rounded">save</span>
+            <button
+              id="settings-save-button"
+              class="icon-btn"
+              data-tooltip="Save & Update"
+              style="width: 100%"
+            >
+              <span class="material-symbols-rounded">save</span>
+            </button>
+
+            <button
+              id="nuke-button"
+              class="icon-btn danger"
+              style="width: 100%; background-color: #d32f2f"
+            >
+              <span
+                class="material-symbols-rounded"
+                style="vertical-align: middle"
+                >delete_forever</span
+              >
+              Delete All Local Data
+            </button>
+
+            <button
+              id="privacy-link"
+              style="
+                background: none;
+                border: none;
+                padding: 0;
+                margin-top: 10px;
+                font-size: 0.8rem;
+                color: var(--text);
+                text-decoration: underline;
+                opacity: 0.7;
+                cursor: pointer;
+              "
+            >
+              Privacy Policy
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="privacy-modal" class="hidden modal">
+        <div
+          class="popup"
+          style="
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: left;
+          "
+        >
+          <button class="close-btn">
+            <span class="material-symbols-rounded">close</span>
           </button>
+          <div id="privacy-content-target">
+            <p>Loading Privacy Policy...</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="onboarding-modal" class="hidden modal">
+        <div class="popup">
+          <h2 id="onboarding-headline"></h2>
+          <p
+            id="onboarding-copy"
+            style="white-space: pre-line; margin: 20px 0"
+          ></p>
+          <button
+            id="onboarding-action"
+            class="icon-btn"
+            style="width: 100%"
+          ></button>
         </div>
       </div>
 

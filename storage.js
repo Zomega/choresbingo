@@ -4,6 +4,7 @@ const KEYS = {
   PLAYER_NAME: "player_name",
   PLAYER_ICON: "player_icon",
   MY_BOARD: "my_board",
+  ONBOARDING_SEEN: "onboarding_seen",
 };
 
 export const Storage = {
@@ -22,6 +23,11 @@ export const Storage = {
   getBoard: () => JSON.parse(localStorage.getItem(KEYS.MY_BOARD) || "[]"),
   setBoard: (state) =>
     localStorage.setItem(KEYS.MY_BOARD, JSON.stringify(state)),
+
+  getOnboardingSeen: () =>
+    localStorage.getItem(KEYS.ONBOARDING_SEEN) === "true",
+  setOnboardingSeen: (seen) =>
+    localStorage.setItem(KEYS.ONBOARDING_SEEN, seen ? "true" : "false"),
 
   clear: () => localStorage.clear(),
 };
