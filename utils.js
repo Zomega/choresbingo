@@ -6,6 +6,15 @@ import {
 } from "https://esm.sh/unique-names-generator";
 import { t } from "./i18n.js";
 
+export const DEBUG = false;
+
+export const Logger = {
+  log: (...args) => DEBUG && console.log(...args),
+  warn: (...args) => console.warn(...args),
+  error: (...args) => console.error(...args),
+  debug: (...args) => DEBUG && console.debug(...args),
+};
+
 export const getDefaultChores = () => [
   { label: t("chores.empty_trash"), color: "green" },
   { label: t("chores.clean_spices") },

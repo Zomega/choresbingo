@@ -1,6 +1,13 @@
 {
   "$schema": "https://schema.stryker-mutator.io/stryker-config.json",
-  "mutate": ["scoring.js", "game.js", "storage.js", "ui.js"],
+  "mutate": [
+    "scoring.js",
+    "game.js",
+    "storage.js",
+    "ui.js",
+    "i18n.js",
+    "utils.js"
+  ],
   "testRunner": "vitest",
   "reporters": ["progress", "clear-text", "html"]
 }

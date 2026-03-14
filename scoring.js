@@ -1,3 +1,5 @@
+import { Logger } from "./utils.js";
+
 export function getAllChains(tiles, gridSize = 5, onlyFree = false) {
   const grid = [];
 
@@ -27,6 +29,10 @@ export function getAllChains(tiles, gridSize = 5, onlyFree = false) {
 export function calculateScore(tiles, gridSize = 5) {
   let currentChains = getAllChains(tiles, gridSize, false);
   let freeChains = getAllChains(tiles, gridSize, true);
+
+  Logger.log(
+    `[Scoring] currentChains: ${currentChains}, freeChains: ${freeChains}`,
+  );
 
   const getRawScore = (chains) => {
     if (chains[0] === 0) return 0;

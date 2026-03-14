@@ -1,6 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Game } from "./game.js";
 
+vi.mock("./utils.js", () => ({
+  Logger: {
+    log: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
 describe("Game State Machine", () => {
   let game;
   const PLAYER_ID = "me";

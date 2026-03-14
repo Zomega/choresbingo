@@ -1,6 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import * as fc from "fast-check";
 import { calculateScore } from "./scoring.js";
+
+// Mock i18n locally for the pure scoring logic
+vi.mock("./i18n.js", () => ({
+  t: vi.fn((key) => `T_${key}`),
+}));
 
 describe("Scoring Logic (Property-based tests)", () => {
   // Helper to convert a boolean array to the tile state object scoring.js expects

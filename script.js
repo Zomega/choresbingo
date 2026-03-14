@@ -26,13 +26,14 @@ const isHost = !JOIN_ID || JOIN_ID === SAVED_HOST_ID;
 let ROOM_ID = JOIN_ID;
 if (isHost) {
   ROOM_ID = SAVED_HOST_ID || generateHumanReadableUniqueId();
-  console.log(`[App] Decided to be HOST. Room: ${ROOM_ID}`);
+  Logger.log(`[App] Decided to be HOST. Room: ${ROOM_ID}`);
   Storage.setHostedRoomId(ROOM_ID);
 } else {
-  console.log(`[App] Decided to be GUEST. Joining Room: ${ROOM_ID}`);
+  Logger.log(`[App] Decided to be GUEST. Joining Room: ${ROOM_ID}`);
 }
 
-const PLAYER_ID = Storage.getPlayerId() || generateHumanReadableUniqueId();
+let PLAYER_ID = Storage.getPlayerId() || generateHumanReadableUniqueId();
+PLAYER_ID = PLAYER_ID.replace(/\s+/g, "-").toLowerCase();
 Storage.setPlayerId(PLAYER_ID);
 
 let myName = Storage.getPlayerName() || PLAYER_ID;
@@ -75,12 +76,15 @@ function initMultiplayer() {
     onReset: () => location.reload(),
   });
 
+  game.addPlayer(PLAYER_ID, myName, myIcon);
+
   multiplayer = new Multiplayer({
     isHost,
     roomId: ROOM_ID,
     playerId: PLAYER_ID,
     playerName: myName,
     playerIcon: myIcon,
+    getScore: () => game.calculateLocalScore(),
     onStatusChange: (isOnline, message) => {
       UI.updateStatus(isOnline, isHost, message);
       if (isOnline) {
@@ -97,10 +101,6 @@ function initMultiplayer() {
       );
     },
   });
-
-  if (isHost) {
-    game.addPlayer(PLAYER_ID, myName, myIcon);
-  }
 
   multiplayer.init();
 
@@ -127,7 +127,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   await initI18n();
   UI.renderBoard(getDefaultChores());
   UI.initOnboarding(Storage);
+
+  // Load Board State
+  const saved = Storage.getBoard();
+  const tiles = document.querySelectorAll(".tile");
+  Logger.log(
+    `[App] Loading board state. Saved: ${saved.length}, DOM tiles: ${tiles.length}`,
+  );
+  saved.forEach((done, i) => {
+    if (done && tiles[i] && !tiles[i].classList.contains("free")) {
+      tiles[i].classList.add("completed");
+    }
+  });
+
   initMultiplayer();
+
+  const initialScore = game.calculateLocalScore();
+  Logger.log(`[App] Initial score calculated: ${initialScore}`);
+  game.addPlayer(PLAYER_ID, myName, myIcon, initialScore);
 
   UI.initModals({
     isHost,
@@ -149,12 +166,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const score = game.calculateLocalScore();
       game.addPlayer(PLAYER_ID, myName, myIcon, score);
+      multiplayer.updateProfile(myName, myIcon);
       multiplayer.broadcast({
         type: "PROFILE_UPDATE",
         id: PLAYER_ID,
         name: myName,
         icon: myIcon,
         score,
+        lastSeen: Date.now(),
       });
     },
   });
@@ -208,15 +227,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
-  // Load Board State
-  const saved = Storage.getBoard();
-  const tiles = document.querySelectorAll(".tile");
-  saved.forEach((done, i) => {
-    if (done && !tiles[i].classList.contains("free")) {
-      tiles[i].classList.add("completed");
-    }
-  });
-
   // Bingo Grid Logic
   document.querySelector(".bingo-grid").onclick = (e) => {
     const tile = e.target.closest(".tile");
@@ -229,11 +239,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const score = game.calculateLocalScore();
     game.updatePlayerScore(PLAYER_ID, score);
-    multiplayer.broadcast({ type: "SCORE", id: PLAYER_ID, score });
+    multiplayer.broadcast({
+      type: "SCORE",
+      id: PLAYER_ID,
+      name: myName,
+      icon: myIcon,
+      score,
+      lastSeen: Date.now(),
+    });
   };
-
-  const initialScore = game.calculateLocalScore();
-  game.addPlayer(PLAYER_ID, myName, myIcon, initialScore);
 });
 
 window.fullReset = () => {

@@ -1,4 +1,5 @@
 import { calculateScore } from "./scoring.js";
+import { Logger } from "./utils.js";
 
 export class Game {
   constructor(options = {}) {
@@ -15,9 +16,24 @@ export class Game {
 
   addPlayer(id, name, icon, score = 0, lastSeen = Date.now()) {
     const isMe = id === this.playerId;
-    const currentScore = isMe ? calculateScore(this.getTilesState()) : score;
+    const existingPlayer = this.players[id];
 
-    if (!this.players[id]) {
+    // If it's me, use existing score if available, else recalculate.
+    // Otherwise, use passed score, or existing score, or 0.
+    let currentScore;
+    if (isMe) {
+      currentScore = existingPlayer
+        ? existingPlayer.score
+        : calculateScore(this.getTilesState());
+    } else {
+      currentScore = score !== undefined ? score : existingPlayer?.score || 0;
+    }
+
+    Logger.log(
+      `[Game] addPlayer: id=${id}, name=${name}, score=${currentScore}, isMe=${isMe}`,
+    );
+
+    if (!existingPlayer) {
       this.players[id] = {
         name,
         icon,
@@ -43,6 +59,7 @@ export class Game {
   }
 
   handleData(data, isHost, sendSync, broadcast) {
+    Logger.log(`[Game] Received ${data.type} from peer.`, data);
     switch (data.type) {
       case "HEARTBEAT_GUEST":
         if (isHost && this.players[data.id]) {
@@ -60,7 +77,13 @@ export class Game {
         break;
 
       case "JOIN":
-        this.addPlayer(data.id, data.name, data.icon, data.score);
+        this.addPlayer(
+          data.id,
+          data.name,
+          data.icon,
+          data.score,
+          data.lastSeen,
+        );
         if (isHost) {
           sendSync({ type: "SYNC", playerData: this.players });
           broadcast(data);
@@ -82,7 +105,19 @@ export class Game {
         break;
 
       case "SCORE":
-        this.updatePlayerScore(data.id, data.score);
+        if (this.players[data.id]) {
+          this.players[data.id].lastSeen = data.lastSeen || Date.now();
+          this.updatePlayerScore(data.id, data.score);
+        } else {
+          // If player doesn't exist yet, add them (prevents lost updates)
+          this.addPlayer(
+            data.id,
+            data.name || `Player ${data.id}`,
+            data.icon || "🏃",
+            data.score !== undefined ? data.score : 0,
+            data.lastSeen || Date.now(),
+          );
+        }
         if (isHost) broadcast(data);
         break;
 
@@ -91,7 +126,9 @@ export class Game {
           data.id,
           data.name,
           data.icon,
-          data.score || 0,
+          data.score !== undefined
+            ? data.score
+            : this.players[data.id]?.score || 0,
           data.lastSeen,
         );
         if (isHost) broadcast(data);

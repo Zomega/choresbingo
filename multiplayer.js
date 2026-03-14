@@ -1,4 +1,5 @@
 import { Peer } from "https://esm.sh/peerjs";
+import { Logger } from "./utils.js";
 
 export class Multiplayer {
   constructor(options = {}) {
@@ -7,6 +8,7 @@ export class Multiplayer {
     this.playerId = options.playerId;
     this.playerName = options.playerName;
     this.playerIcon = options.playerIcon;
+    this.getScore = options.getScore || (() => 0);
     this.onStatusChange = options.onStatusChange || (() => {});
     this.onData = options.onData || (() => {});
 
@@ -31,7 +33,7 @@ export class Multiplayer {
 
     const myPeerId = this.isHost ? this.roomId : null;
 
-    console.log(
+    Logger.log(
       `[Multiplayer] Init: isHost=${this.isHost}, myPeerId=${myPeerId}`,
     );
 
@@ -45,18 +47,18 @@ export class Multiplayer {
       },
     };
 
-    console.log(
+    Logger.log(
       `[Multiplayer] Initializing as ${this.isHost ? "Host" : "Guest"} (Target ID: ${this.roomId})...`,
     );
     this.peer = new Peer(myPeerId, peerOptions);
 
     this.peer.on("open", (id) => {
-      console.log(`[Multiplayer] Signaling connection open. My ID: ${id}`);
+      Logger.log(`[Multiplayer] Signaling connection open. My ID: ${id}`);
       this.connectionAttempts = 0;
 
       if (this.isHost) {
         this.roomId = id;
-        console.log(`[Multiplayer] Now Hosting Room: ${id}`);
+        Logger.log(`[Multiplayer] Now Hosting Room: ${id}`);
       } else {
         this.connectToHost();
       }
@@ -66,21 +68,21 @@ export class Multiplayer {
     });
 
     this.peer.on("connection", (conn) => {
-      console.log(`[Multiplayer] Incoming guest connection: ${conn.peer}`);
+      Logger.log(`[Multiplayer] Incoming guest connection: ${conn.peer}`);
       this.setupConn(conn);
     });
 
     this.peer.on("disconnected", () => {
-      console.warn("[Multiplayer] Signaling server disconnected.");
+      Logger.warn("[Multiplayer] Signaling server disconnected.");
       this.onStatusChange(false, "Offline (Signal Lost)");
       this.peer.reconnect();
     });
 
     this.peer.on("error", (err) => {
-      console.error(`[Multiplayer] PeerJS Error: ${err.type}`, err);
+      Logger.error(`[Multiplayer] PeerJS Error: ${err.type}`, err);
 
       if (err.type === "unavailable-id" && this.isHost) {
-        console.warn(
+        Logger.warn(
           "[Multiplayer] ID still in use by old session. Retrying in 2s...",
         );
         this.onStatusChange(false, "Waiting for ID release...");
@@ -102,13 +104,13 @@ export class Multiplayer {
     if (!this.roomId || !this.peer || this.peer.destroyed || !this.peer.open)
       return;
 
-    console.log(
+    Logger.log(
       `[Multiplayer] Attempting connection to Host: ${this.roomId}...`,
     );
 
     // Safety: If Guest Peer object gets weird after many failures, recycle it
     if (++this.connectionAttempts > 10) {
-      console.warn(
+      Logger.warn(
         "[Multiplayer] Persistent guest connection failure. Recycling Peer...",
       );
       this.init();
@@ -128,7 +130,7 @@ export class Multiplayer {
     this.connections.push(conn);
 
     conn.on("open", () => {
-      console.log(`[Multiplayer] Data channel open with: ${conn.peer}`);
+      Logger.log(`[Multiplayer] Data channel open with: ${conn.peer}`);
       this.connectionAttempts = 0;
       this.onStatusChange(true);
 
@@ -137,14 +139,20 @@ export class Multiplayer {
         this.reconnectionInterval = null;
       }
 
-      conn.send({
-        type: "JOIN",
-        id: this.playerId,
-        name: this.playerName,
-        icon: this.playerIcon,
-        score: 0,
-        lastSeen: Date.now(),
-      });
+      if (!this.isHost) {
+        const initialScore = this.getScore();
+        Logger.log(
+          `[Multiplayer] Sending JOIN. Name: ${this.playerName}, Score: ${initialScore}`,
+        );
+        conn.send({
+          type: "JOIN",
+          id: this.playerId,
+          name: this.playerName,
+          icon: this.playerIcon,
+          score: initialScore,
+          lastSeen: Date.now(),
+        });
+      }
     });
 
     conn.on("data", (data) => {
@@ -152,7 +160,7 @@ export class Multiplayer {
     });
 
     conn.on("close", () => {
-      console.warn(`[Multiplayer] Data connection closed: ${conn.peer}`);
+      Logger.warn(`[Multiplayer] Data connection closed: ${conn.peer}`);
       this.connections = this.connections.filter((c) => c !== conn);
 
       if (!this.isHost && conn.peer === this.roomId) {
@@ -162,7 +170,7 @@ export class Multiplayer {
     });
 
     conn.on("error", (err) => {
-      console.error(`[Multiplayer] Data connection error:`, err);
+      Logger.error(`[Multiplayer] Data connection error:`, err);
       conn.close();
     });
   }
@@ -170,12 +178,17 @@ export class Multiplayer {
   scheduleReconnection() {
     if (this.reconnectionInterval || this.isHost) return;
 
-    console.log("[Multiplayer] Host not found. Entering polling mode...");
+    Logger.log("[Multiplayer] Host not found. Entering polling mode...");
     this.reconnectionInterval = setInterval(() => {
       if (this.peer && !this.peer.destroyed && this.peer.open) {
         this.connectToHost();
       }
     }, 4000);
+  }
+
+  updateProfile(name, icon) {
+    this.playerName = name;
+    this.playerIcon = icon;
   }
 
   broadcast(msg) {
@@ -209,7 +222,7 @@ export class Multiplayer {
   }
 
   cleanup() {
-    console.log("[Multiplayer] Force cleaning up Peer session...");
+    Logger.log("[Multiplayer] Force cleaning up Peer session...");
     window.removeEventListener("beforeunload", this.cleanup);
     this.stopIntervals();
     if (this.peer) {
